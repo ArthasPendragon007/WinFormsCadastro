@@ -58,6 +58,5 @@ END $$;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE cadastro TO cadastro_user;
 GRANT USAGE, SELECT ON SEQUENCE cadastro_id_seq TO cadastro_user;
-GRANT INSERT ON TABLE log_operacoes TO cadastro_user;
 GRANT USAGE, SELECT ON SEQUENCE log_operacoes_id_seq TO cadastro_user;
 ALTER TABLE log_operacoes OWNER TO cadastro_user;

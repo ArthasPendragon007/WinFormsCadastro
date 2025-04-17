@@ -19,3 +19,4 @@ D:\VisualStudioCode\projects\WinFormsCadastro\WinFormsApp1\obj\Debug\net8.0-wind
 D:\VisualStudioCode\projects\WinFormsCadastro\WinFormsApp1\obj\Debug\net8.0-windows\WinFormsApp1.pdb
 D:\VisualStudioCode\projects\WinFormsCadastro\WinFormsApp1\obj\Debug\net8.0-windows\WinFormsApp1.genruntimeconfig.cache
 D:\VisualStudioCode\projects\WinFormsCadastro\WinFormsApp1\obj\Debug\net8.0-windows\ref\WinFormsApp1.dll
+D:\VisualStudioCode\projects\WinFormsCadastro\WinFormsApp1\obj\Debug\net8.0-windows\WinFormsApp1.sourcelink.json

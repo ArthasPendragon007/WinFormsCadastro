@@ -85,7 +85,7 @@
             dgvCadastros.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvCadastros.Location = new Point(104, 173);
             dgvCadastros.Name = "dgvCadastros";
-            dgvCadastros.Size = new Size(528, 207);
+            dgvCadastros.Size = new Size(543, 207);
             dgvCadastros.TabIndex = 5;
             dgvCadastros.CellClick += dgvCadastros_CellClick;
             // 

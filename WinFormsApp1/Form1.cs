@@ -5,11 +5,24 @@ namespace WinFormsApp1
 {
     public partial class Form1 : Form
     {
-        string connStr = "Host=localhost;Username=cadastro_user;Password=1234;Database=cadastro";
+        private readonly string connStr;
 
         public Form1()
         {
             InitializeComponent();
+
+            // Configurar string de conexão principal usando variáveis de ambiente
+            string host = ObterVariavelAmbiente("POSTGRES_HOST", "localhost");
+            string user = ObterVariavelAmbiente("POSTGRES_USER", "cadastro_user");
+            string password = ObterVariavelAmbiente("POSTGRES_PASSWORD", "1234");
+            string database = ObterVariavelAmbiente("POSTGRES_DATABASE", "cadastro");
+
+            connStr = $"Host={host};Username={user};Password={password};Database={database}";
+        }
+
+        private string ObterVariavelAmbiente(string nome, string valorPadrao)
+        {
+            return Environment.GetEnvironmentVariable(nome) ?? valorPadrao;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -20,7 +33,16 @@ namespace WinFormsApp1
 
         private void CriarEstruturaDoBanco()
         {
-            string connStrPostgres = "Host=localhost;Username=postgres;Password=1234;Database=postgres";
+            // Strings de conexão usando variáveis de ambiente
+            string host = ObterVariavelAmbiente("POSTGRES_HOST", "localhost");
+            string adminUser = ObterVariavelAmbiente("POSTGRES_ADMIN_USER", "postgres");
+            string adminPassword = ObterVariavelAmbiente("POSTGRES_ADMIN_PASSWORD", "1234");
+            string appUser = ObterVariavelAmbiente("POSTGRES_USER", "cadastro_user");
+            string appPassword = ObterVariavelAmbiente("POSTGRES_PASSWORD", "1234");
+            string database = ObterVariavelAmbiente("POSTGRES_DATABASE", "cadastro");
+
+            string connStrPostgres = $"Host={host};Username={adminUser};Password={adminPassword};Database=postgres";
+            string connStrCadastro = $"Host={host};Username={adminUser};Password={adminPassword};Database={database}";
 
             using (var conn = new NpgsqlConnection(connStrPostgres))
             {
@@ -28,12 +50,12 @@ namespace WinFormsApp1
                 {
                     conn.Open();
 
-                    string verificarBanco = "SELECT 1 FROM pg_database WHERE datname = 'cadastro'";
+                    string verificarBanco = $"SELECT 1 FROM pg_database WHERE datname = '{database}'";
                     using (var cmd = new NpgsqlCommand(verificarBanco, conn))
                     {
                         if (cmd.ExecuteScalar() == null)
                         {
-                            new NpgsqlCommand("CREATE DATABASE cadastro", conn).ExecuteNonQuery();
+                            new NpgsqlCommand($"CREATE DATABASE {database}", conn).ExecuteNonQuery();
                             MessageBox.Show("Banco de dados criado com sucesso!");
                         }
                     }
@@ -44,8 +66,6 @@ namespace WinFormsApp1
                     MessageBox.Show($"Erro ao criar banco de dados: {ex.Message}");
                 }
             }
-
-            string connStrCadastro = "Host=localhost;Username=postgres;Password=1234;Database=cadastro";
 
             using (var conn = new NpgsqlConnection(connStrCadastro))
             {
@@ -60,7 +80,7 @@ namespace WinFormsApp1
                     nome TEXT NOT NULL,
                     numero INTEGER NOT NULL UNIQUE CHECK (numero > 0)
                 );", conn).ExecuteNonQuery();
-    
+
                     new NpgsqlCommand(@"
                 CREATE TABLE IF NOT EXISTS log_operacoes (
                     id SERIAL PRIMARY KEY,
@@ -118,13 +138,12 @@ namespace WinFormsApp1
                 END $$;", conn).ExecuteNonQuery();
 
                     // usuário e permissões
-                    new NpgsqlCommand("DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cadastro_user') THEN CREATE USER cadastro_user WITH PASSWORD '1234'; END IF; END $$;", conn).ExecuteNonQuery();
+                    new NpgsqlCommand($"DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '{appUser}') THEN CREATE USER {appUser} WITH PASSWORD '{appPassword}'; END IF; END $$;", conn).ExecuteNonQuery();
 
-                    new NpgsqlCommand("GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE cadastro TO cadastro_user;", conn).ExecuteNonQuery();
-                    new NpgsqlCommand("GRANT USAGE, SELECT ON SEQUENCE cadastro_id_seq TO cadastro_user;", conn).ExecuteNonQuery();
-                    new NpgsqlCommand("GRANT INSERT ON TABLE log_operacoes TO cadastro_user;", conn).ExecuteNonQuery();
-                    new NpgsqlCommand("GRANT USAGE, SELECT ON SEQUENCE log_operacoes_id_seq TO cadastro_user;", conn).ExecuteNonQuery();
-                    new NpgsqlCommand("ALTER TABLE log_operacoes OWNER TO cadastro_user;", conn).ExecuteNonQuery();
+                    new NpgsqlCommand($"GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE cadastro TO {appUser};", conn).ExecuteNonQuery();
+                    new NpgsqlCommand($"GRANT USAGE, SELECT ON SEQUENCE cadastro_id_seq TO {appUser};", conn).ExecuteNonQuery();
+                    new NpgsqlCommand($"GRANT USAGE, SELECT ON SEQUENCE log_operacoes_id_seq TO {appUser};", conn).ExecuteNonQuery();
+                    new NpgsqlCommand($"ALTER TABLE log_operacoes OWNER TO {appUser};", conn).ExecuteNonQuery();
 
                     MessageBox.Show("Estrutura do banco, triggers e permissões criadas com sucesso!");
                 }
@@ -134,7 +153,6 @@ namespace WinFormsApp1
                 }
             }
         }
-
 
         private bool VerificarConexao()
         {
@@ -296,3 +314,4 @@ namespace WinFormsApp1
         }
     }
 }
+
